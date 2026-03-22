@@ -1,0 +1,50 @@
+package io.nology.resources.job;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import io.nology.resources.job.dto.CreateJobReq;
+import io.nology.resources.job.dto.JobResponse;
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/jobs")
+public class JobController {
+
+    private final JobService jobService;
+
+    public JobController(JobService jobService) {
+        this.jobService = jobService;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public JobResponse createJob(@RequestBody @Valid CreateJobReq request) {
+        return jobService.createJob(request);
+    }
+
+    @PatchMapping("/{id}/assign")
+    public JobResponse assignTemp(
+            @PathVariable Long id,
+            @RequestParam Long tempId) {
+        return jobService.assignTemp(id, tempId);
+    }
+
+    @PatchMapping("/{id}/unassign")
+    public JobResponse unassignTemp(@PathVariable Long id) {
+        return jobService.unassignTemp(id);
+    }
+
+    @GetMapping
+    public List<JobResponse> getJobs(@RequestParam Optional<Boolean> assigned) {
+        return jobService.getAllJobs(assigned);
+    }
+
+    @GetMapping("/{id}")
+    public JobResponse getJob(@PathVariable Long id) {
+        return jobService.getJobById(id);
+    }
+}
