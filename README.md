@@ -1,9 +1,6 @@
 # Resourcing API (Backend)
-<<<<<<< HEAD
-=======
-[!workflow](https://github.com/gosiasinilo/resourcing-BACK-END/actions/workflows/maven.yml/badge.svg)
 
->>>>>>> 9e0525f164c6482c3f97c52e4489e7e4cb5b8da1
+[![CI](https://github.com/gosiasinilo/resourcing-BACK-END/actions/workflows/ci.yml/badge.svg)](https://github.com/gosiasinilo/resourcing-BACK-END/actions/workflows/ci.yml)
 
 ## Demo & Snippets
 
