@@ -1,4 +1,6 @@
 # Resourcing API (Backend)
+[!workflow](https://github.com/gosiasinilo/resourcing-BACK-END/actions/workflows/maven.yml/badge.svg)
+
 
 ## Demo & Snippets
 
