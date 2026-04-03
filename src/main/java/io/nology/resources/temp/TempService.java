@@ -1,9 +1,11 @@
 package io.nology.resources.temp;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.nology.resources.common.exception.BadRequestException;
 import io.nology.resources.common.exception.NotFoundException;
@@ -109,5 +111,19 @@ public class TempService {
         temp.setEmail(request.email());
 
         return tempMapper.toResponse(tempRepository.save(temp));
+    }
+
+    @Transactional
+    public void deleteTemp(Long id) {
+        Temp temp = tempRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(new NotFoundError("Temp", id)));
+
+        List<Job> jobs = new ArrayList<>(temp.getJobs());
+
+        for (Job job : jobs) {
+            job.setTemp(null);
+        }
+
+        tempRepository.delete(temp);
     }
 }

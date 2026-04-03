@@ -194,4 +194,29 @@ public class JobE2eTest extends E2eTestSuite {
                 .statusCode(400)
                 .body("message", notNullValue());
     }
+
+    @Test
+    void deleteJob_shouldReturn204() {
+
+        int jobId = given()
+                .contentType("application/json")
+                .body("""
+                        {
+                          "name": "Test job",
+                         "startDate": "%s",
+                                      "endDate": "%s"
+                                    }
+                                """.formatted(start.toString(), end.toString()))
+                .when()
+                .post("/jobs")
+                .then()
+                .extract()
+                .path("id");
+
+        given()
+                .when()
+                .delete("/jobs/" + jobId)
+                .then()
+                .statusCode(204);
+    }
 }

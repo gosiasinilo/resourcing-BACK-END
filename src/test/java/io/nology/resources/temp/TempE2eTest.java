@@ -114,4 +114,29 @@ public class TempE2eTest extends E2eTestSuite {
                                 .statusCode(200)
                                 .body("$", notNullValue());
         }
+
+        @Test
+        void deleteTemp_shouldReturn204() {
+
+                int tempId = given()
+                                .contentType("application/json")
+                                .body("""
+                                                    {
+                                                      "firstName": "John",
+                                                      "lastName": "Doe",
+                                                      "email": "john@example.com"
+                                                    }
+                                                """)
+                                .when()
+                                .post("/temps")
+                                .then()
+                                .extract()
+                                .path("id");
+
+                given()
+                                .when()
+                                .delete("/temps/" + tempId)
+                                .then()
+                                .statusCode(204);
+        }
 }

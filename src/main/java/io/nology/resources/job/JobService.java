@@ -132,4 +132,16 @@ public class JobService {
 
                 return jobMapper.toResponse(jobRepository.save(job));
         }
+
+        @Transactional
+        public void deleteJob(Long id) {
+                Job job = jobRepository.findById(id)
+                                .orElseThrow(() -> new NotFoundException(new NotFoundError("Job", id)));
+
+                if (job.getTemp() != null) {
+                        unassignTemp(id);
+                }
+
+                jobRepository.delete(job);
+        }
 }
