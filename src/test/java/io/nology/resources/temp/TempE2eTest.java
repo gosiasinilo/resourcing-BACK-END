@@ -17,7 +17,8 @@ public class TempE2eTest extends E2eTestSuite {
                                 .body("""
                                                     {
                                                       "firstName": "John",
-                                                      "lastName": "Brown"
+                                                      "lastName": "Brown",
+                                                      "email": "john.brown@example.com"
                                                     }
                                                 """)
                                 .when()
@@ -26,7 +27,8 @@ public class TempE2eTest extends E2eTestSuite {
                                 .statusCode(201)
                                 .body("id", notNullValue())
                                 .body("firstName", equalTo("John"))
-                                .body("lastName", equalTo("Brown"));
+                                .body("lastName", equalTo("Brown"))
+                                .body("email", equalTo("john.brown@example.com"));
         }
 
         @Test
@@ -47,7 +49,8 @@ public class TempE2eTest extends E2eTestSuite {
                                 .body("""
                                                     {
                                                       "firstName": "Anna",
-                                                      "lastName": "Smith"
+                                                      "lastName": "Smith",
+                                                      "email": "anna.smith@example.com"
                                                     }
                                                 """)
                                 .when()

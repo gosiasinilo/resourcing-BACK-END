@@ -3,17 +3,17 @@ package io.nology.resources.job;
 import org.springframework.stereotype.Component;
 
 import io.nology.resources.job.dto.JobResponse;
-import io.nology.resources.job.dto.TempDetails;
 import io.nology.resources.job.entity.Job;
+import io.nology.resources.temp.dto.TempResponse;
 import io.nology.resources.temp.entity.Temp;
 
 @Component
 public class JobMapper {
 
-    public TempDetails TempDetails(Temp temp) {
+    public TempResponse TempResponse(Temp temp) {
         if (temp == null)
             return null;
-        return new TempDetails(temp.getId(), temp.getFirstName(), temp.getLastName());
+        return new TempResponse(temp.getId(), temp.getFirstName(), temp.getLastName(), temp.getEmail());
     }
 
     public JobResponse toResponse(Job job) {
@@ -23,7 +23,7 @@ public class JobMapper {
                 job.getName(),
                 job.getStartDate(),
                 job.getEndDate(),
-                TempDetails(job.getTemp()));
+                TempResponse(job.getTemp()));
     }
 
 }

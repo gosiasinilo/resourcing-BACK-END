@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 public class Temp extends BaseEntity implements Timestampable {
     private String firstName;
     private String lastName;
+    private String email;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -44,6 +45,14 @@ public class Temp extends BaseEntity implements Timestampable {
         this.lastName = lastName;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -67,4 +76,5 @@ public class Temp extends BaseEntity implements Timestampable {
     public void setJobs(List<Job> jobs) {
         this.jobs = jobs;
     }
+
 }

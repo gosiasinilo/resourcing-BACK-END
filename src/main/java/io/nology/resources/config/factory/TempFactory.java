@@ -17,6 +17,7 @@ public class TempFactory {
         Temp temp = new Temp();
         temp.setFirstName(faker.name().firstName());
         temp.setLastName(faker.name().lastName());
+        temp.setEmail(faker.internet().emailAddress());
         return temp;
     }
 }

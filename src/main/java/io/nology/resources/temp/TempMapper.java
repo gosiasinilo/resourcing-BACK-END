@@ -18,7 +18,8 @@ public class TempMapper {
         return new TempResponse(
                 temp.getId(),
                 temp.getFirstName(),
-                temp.getLastName());
+                temp.getLastName(),
+                temp.getEmail());
     }
 
     public TempResponseById toDetailResponse(Temp temp) {
@@ -29,6 +30,7 @@ public class TempMapper {
                 temp.getId(),
                 temp.getFirstName(),
                 temp.getLastName(),
+                temp.getEmail(),
                 jobs);
     }
 

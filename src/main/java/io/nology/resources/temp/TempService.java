@@ -79,6 +79,7 @@ public class TempService {
                         temp.getId(),
                         temp.getFirstName(),
                         temp.getLastName(),
+                        temp.getEmail(),
                         nextAvailable,
                         alternatives);
             }
@@ -87,6 +88,7 @@ public class TempService {
                     temp.getId(),
                     temp.getFirstName(),
                     temp.getLastName(),
+                    temp.getEmail(),
                     startDate,
                     List.of());
 
@@ -104,6 +106,7 @@ public class TempService {
         Temp temp = new Temp();
         temp.setFirstName(request.firstName());
         temp.setLastName(request.lastName());
+        temp.setEmail(request.email());
 
         return tempMapper.toResponse(tempRepository.save(temp));
     }

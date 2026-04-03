@@ -15,9 +15,9 @@ import io.nology.resources.common.serviceErrors.NotFoundError;
 import io.nology.resources.common.serviceErrors.ValidationErrors;
 import io.nology.resources.job.dto.CreateJobReq;
 import io.nology.resources.job.dto.JobResponse;
-import io.nology.resources.job.dto.TempDetails;
 import io.nology.resources.job.entity.Job;
 import io.nology.resources.temp.TempRepository;
+import io.nology.resources.temp.dto.TempResponse;
 import io.nology.resources.temp.entity.Temp;
 
 @Service
@@ -93,10 +93,11 @@ public class JobService {
                                         .map(d -> d.plusDays(1))
                                         .orElse(job.getStartDate());
 
-                        List<TempDetails> availableTempDetails = tempRepository.getAvailableTemps(
+                        List<TempResponse> availableTempResponse = tempRepository.getAvailableTemps(
                                         job.getStartDate(), job.getEndDate())
                                         .stream()
-                                        .map(t -> new TempDetails(t.getId(), t.getFirstName(), t.getLastName()))
+                                        .map(t -> new TempResponse(t.getId(), t.getFirstName(), t.getLastName(),
+                                                        t.getEmail()))
                                         .toList();
 
                         throw new BadRequestException(
@@ -105,7 +106,7 @@ public class JobService {
                                         "TEMP_BUSY",
                                         Map.of(
                                                         "nextAvailableDate", List.of(nextAvailableDate.toString()),
-                                                        "availableTemps", availableTempDetails.stream()
+                                                        "availableTemps", availableTempResponse.stream()
                                                                         .map(t -> t.id() + " - " + t.firstName() + " "
                                                                                         + t.lastName())
                                                                         .toList()));

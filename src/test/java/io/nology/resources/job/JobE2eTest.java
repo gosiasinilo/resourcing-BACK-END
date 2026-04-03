@@ -1,5 +1,7 @@
 package io.nology.resources.job;
 
+import java.time.LocalDate;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.notNullValue;
@@ -10,181 +12,186 @@ import io.nology.resources.E2eTestSuite;
 import static io.restassured.RestAssured.given;
 
 public class JobE2eTest extends E2eTestSuite {
+    LocalDate start = LocalDate.now().plusDays(1);
+    LocalDate end = LocalDate.now().plusDays(5);
 
-  @Test
-  void createJob_shouldReturn201() {
+    @Test
+    void createJob_shouldReturn201() {
 
-    given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "name": "Signs installation",
-                  "startDate": "2026-04-01",
-                  "endDate": "2026-04-10"
-                }
-            """)
-        .when()
-        .post("/jobs")
-        .then()
-        .statusCode(201)
-        .body("id", notNullValue())
-        .body("name", equalTo("Signs installation"));
-  }
+        given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "name": "Signs installation",
+                              "startDate": "%s",
+                              "endDate": "%s"
+                            }
+                        """.formatted(start.toString(), end.toString()))
+                .when()
+                .post("/jobs")
+                .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+                .body("name", equalTo("Signs installation"));
+    }
 
-  @Test
-  void getAllJobs_shouldReturnJobs() {
-    given()
-        .when()
-        .get("/jobs")
-        .then()
-        .statusCode(200)
-        .body("size()", greaterThan(0));
-  }
+    @Test
+    void getAllJobs_shouldReturnJobs() {
+        given()
+                .when()
+                .get("/jobs")
+                .then()
+                .statusCode(200)
+                .body("size()", greaterThan(0));
+    }
 
-  @Test
-  void assignTemp_shouldReturnUpdatedJob() {
+    @Test
+    void assignTemp_shouldReturnUpdatedJob() {
 
-    int tempId = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "firstName": "John",
-                  "lastName": "Brown"
-                }
-            """)
-        .when()
-        .post("/temps")
-        .then()
-        .extract()
-        .path("id");
+        int tempId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "firstName": "John",
+                              "lastName": "Brown",
+                              "email": "john.brown@example.com"
+                            }
+                        """)
+                .when()
+                .post("/temps")
+                .then()
+                .extract()
+                .path("id");
 
-    int jobId = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "name": "Factory shift",
-                  "startDate": "2026-05-01",
-                  "endDate": "2026-05-05"
-                }
-            """)
-        .when()
-        .post("/jobs")
-        .then()
-        .extract()
-        .path("id");
+        int jobId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "name": "Factory shift",
+                               "startDate": "%s",
+                              "endDate": "%s"
+                            }
+                        """.formatted(start.toString(), end.toString()))
+                .when()
+                .post("/jobs")
+                .then()
+                .extract()
+                .path("id");
 
-    given()
-        .when()
-        .patch("/jobs/" + jobId + "/assign?tempId=" + tempId)
-        .then()
-        .statusCode(200)
-        .body("temp.id", equalTo(tempId));
-  }
+        given()
+                .when()
+                .patch("/jobs/" + jobId + "/assign?tempId=" + tempId)
+                .then()
+                .statusCode(200)
+                .body("temp.id", equalTo(tempId));
+    }
 
-  @Test
-  void unassignTemp_shouldRemoveTemp() {
+    @Test
+    void unassignTemp_shouldRemoveTemp() {
 
-    int tempId = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "firstName": "John",
-                  "lastName": "Brown"
-                }
-            """)
-        .when()
-        .post("/temps")
-        .then()
-        .extract()
-        .path("id");
+        int tempId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "firstName": "John",
+                              "lastName": "Brown",
+                              "email": "john.brown@example.com"
+                            }
+                        """)
+                .when()
+                .post("/temps")
+                .then()
+                .extract()
+                .path("id");
 
-    int jobId = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "name": "Cleaning warehouse",
-                  "startDate": "2026-06-01",
-                  "endDate": "2026-06-05"
-                }
-            """)
-        .when()
-        .post("/jobs")
-        .then()
-        .extract()
-        .path("id");
+        int jobId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "name": "Cleaning warehouse",
+                               "startDate": "%s",
+                              "endDate": "%s"
+                            }
+                        """.formatted(start.toString(), end.toString()))
+                .when()
+                .post("/jobs")
+                .then()
+                .extract()
+                .path("id");
 
-    given()
-        .when()
-        .patch("/jobs/" + jobId + "/assign?tempId=" + tempId)
-        .then()
-        .statusCode(200);
+        given()
+                .when()
+                .patch("/jobs/" + jobId + "/assign?tempId=" + tempId)
+                .then()
+                .statusCode(200);
 
-    given()
-        .when()
-        .patch("/jobs/" + jobId + "/unassign")
-        .then()
-        .statusCode(200)
-        .body("temp", nullValue());
-  }
+        given()
+                .when()
+                .patch("/jobs/" + jobId + "/unassign")
+                .then()
+                .statusCode(200)
+                .body("temp", nullValue());
+    }
 
-  @Test
-  void assignTemp_whenBusy_shouldReturn400() {
+    @Test
+    void assignTemp_whenBusy_shouldReturn400() {
 
-    int tempId = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "firstName": "John",
-                  "lastName": "Smith"
-                }
-            """)
-        .when()
-        .post("/temps")
-        .then()
-        .extract()
-        .path("id");
+        int tempId = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "firstName": "John",
+                              "lastName": "Smith",
+                              "email": "john.smith@example.com"
+                            }
+                        """)
+                .when()
+                .post("/temps")
+                .then()
+                .extract()
+                .path("id");
 
-    int job1 = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "name": "Event setup",
-                  "startDate": "2026-07-01",
-                  "endDate": "2026-07-05"
-                }
-            """)
-        .when()
-        .post("/jobs")
-        .then()
-        .extract()
-        .path("id");
+        int job1 = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "name": "Event setup",
+                               "startDate": "%s",
+                              "endDate": "%s"
+                            }
+                        """.formatted(start.toString(), end.toString()))
+                .when()
+                .post("/jobs")
+                .then()
+                .extract()
+                .path("id");
 
-    given()
-        .when()
-        .patch("/jobs/" + job1 + "/assign?tempId=" + tempId)
-        .then()
-        .statusCode(200);
+        given()
+                .when()
+                .patch("/jobs/" + job1 + "/assign?tempId=" + tempId)
+                .then()
+                .statusCode(200);
 
-    int job2 = given()
-        .contentType("application/json")
-        .body("""
-                {
-                  "name": "Event teardown",
-                  "startDate": "2026-07-02",
-                  "endDate": "2026-07-04"
-                }
-            """)
-        .when()
-        .post("/jobs")
-        .then()
-        .extract()
-        .path("id");
+        int job2 = given()
+                .contentType("application/json")
+                .body("""
+                            {
+                              "name": "Event teardown",
+                              "startDate": "%s",
+                              "endDate": "%s"
+                            }
+                        """.formatted(start.toString(), end.toString()))
+                .when()
+                .post("/jobs")
+                .then()
+                .extract()
+                .path("id");
 
-    given()
-        .when()
-        .patch("/jobs/" + job2 + "/assign?tempId=" + tempId)
-        .then()
-        .statusCode(400)
-        .body("message", notNullValue());
-  }
+        given()
+                .when()
+                .patch("/jobs/" + job2 + "/assign?tempId=" + tempId)
+                .then()
+                .statusCode(400)
+                .body("message", notNullValue());
+    }
 }
