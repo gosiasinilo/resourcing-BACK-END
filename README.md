@@ -20,6 +20,10 @@
 - Create job
 - Create temp
 - Unassign/assign temp to the job - if temp busy show next available date and list of temps available on the date
+- Delete job (unassign temp if assigned)
+- Delete temp ( unassign all jobs if assigned )
+- Edit temp (full or partial)
+- Edit job (full or partial - check if the temp is still avaliable if the dates changed)
 
 # Assumptions
 
@@ -56,8 +60,12 @@
 
 - Create jobs
 - Create temps
+- Delete job
+- Delete temp
 - Assign temp to job
 - Unassign temp from job
+- Edit job
+- Edit temp
 - Prevent overlapping job assignments.
   If temp busy suggest:
   - next available date
@@ -82,6 +90,7 @@
 ## Future Goals
 
 - Pagination and sorting
+- Search 
 - Authentication
 - Extra features : wage per day, budget per job etc.
 
