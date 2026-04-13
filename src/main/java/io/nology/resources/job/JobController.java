@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.nology.resources.job.dto.CreateJobReq;
+import io.nology.resources.job.dto.EditJobReq;
 import io.nology.resources.job.dto.JobResponse;
+import io.nology.resources.job.service.JobService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -45,6 +47,11 @@ public class JobController {
     @PatchMapping("/{id}/unassign")
     public JobResponse unassignTemp(@PathVariable Long id) {
         return jobService.unassignTemp(id);
+    }
+
+    @PatchMapping("/{id}")
+    public JobResponse editJob(@PathVariable Long id, @RequestBody EditJobReq request) {
+        return jobService.editJob(id, request);
     }
 
     @GetMapping

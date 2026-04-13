@@ -11,10 +11,12 @@ import io.nology.resources.common.exception.BadRequestException;
 import io.nology.resources.common.exception.NotFoundException;
 import io.nology.resources.common.serviceErrors.NotFoundError;
 import io.nology.resources.common.serviceErrors.ValidationErrors;
+import io.nology.resources.common.validations.Validations;
 import io.nology.resources.job.JobRepository;
 import io.nology.resources.job.entity.Job;
 import io.nology.resources.temp.dto.AvailableTempInfo;
 import io.nology.resources.temp.dto.CreateTempReq;
+import io.nology.resources.temp.dto.EditTempReq;
 import io.nology.resources.temp.dto.TempResponse;
 import io.nology.resources.temp.dto.TempResponseById;
 import io.nology.resources.temp.entity.Temp;
@@ -25,11 +27,14 @@ public class TempService {
     private final TempRepository tempRepository;
     private final JobRepository jobRepository;
     private final TempMapper tempMapper;
+    private final TempAssigning tempAssigning;
 
-    public TempService(TempRepository tempRepository, JobRepository jobRepository, TempMapper tempMapper) {
+    public TempService(TempRepository tempRepository, JobRepository jobRepository, TempMapper tempMapper,
+            TempAssigning tempAssigning) {
         this.tempRepository = tempRepository;
         this.jobRepository = jobRepository;
         this.tempMapper = tempMapper;
+        this.tempAssigning = tempAssigning;
     }
 
     public List<TempResponse> getAllTemps() {
@@ -58,32 +63,16 @@ public class TempService {
 
         return allTemps.stream().map(temp -> {
 
-            boolean isBusy = temp.getJobs().stream()
-                    .anyMatch(j -> !(j.getEndDate().isBefore(startDate) || j.getStartDate().isAfter(endDate)));
+            boolean busy = !tempAssigning.isTempAvailable(temp, startDate, endDate);
 
-            if (isBusy) {
-                LocalDate nextAvailable = temp.getJobs().stream()
-                        .map(Job::getEndDate)
-                        .filter(d -> !d.isBefore(startDate))
-                        .max(LocalDate::compareTo)
-                        .map(d -> d.plusDays(1))
-                        .orElse(startDate);
-
-                List<String> alternatives = allTemps.stream()
-                        .filter(t -> !t.getId().equals(temp.getId()))
-                        .filter(t -> t.getJobs().stream()
-                                .noneMatch(j -> !(j.getEndDate().isBefore(startDate)
-                                        || j.getStartDate().isAfter(endDate))))
-                        .map(t -> t.getFirstName() + " " + t.getLastName())
-                        .toList();
-
+            if (busy) {
                 return new AvailableTempInfo(
                         temp.getId(),
                         temp.getFirstName(),
                         temp.getLastName(),
                         temp.getEmail(),
-                        nextAvailable,
-                        alternatives);
+                        tempAssigning.getNextAvailableDate(temp, startDate),
+                        tempAssigning.getAlternativeTemps(allTemps, startDate, endDate, temp.getId()));
             }
 
             return new AvailableTempInfo(
@@ -93,7 +82,6 @@ public class TempService {
                     temp.getEmail(),
                     startDate,
                     List.of());
-
         }).toList();
     }
 
@@ -123,7 +111,39 @@ public class TempService {
         for (Job job : jobs) {
             job.setTemp(null);
         }
-
+        temp.getJobs().clear();
         tempRepository.delete(temp);
+    }
+
+    @Transactional
+    public TempResponse editTemp(Long id, EditTempReq req) {
+
+        Temp temp = tempRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(new NotFoundError("Temp", id)));
+
+        ValidationErrors err = new ValidationErrors();
+
+        if (req.firstName() != null && !req.firstName().equals(temp.getFirstName())) {
+            Validations.validateMinLength("firstName", req.firstName(), 3, err);
+            temp.setFirstName(req.firstName());
+        }
+
+        if (req.lastName() != null && !req.lastName().equals(temp.getLastName())) {
+            Validations.validateMinLength("lastName", req.lastName(), 3, err);
+            temp.setLastName(req.lastName());
+        }
+        if (req.email() != null && !req.email().equals(temp.getEmail())) {
+            Validations.validateEmail("email", req.email(), err);
+        }
+
+        if (!err.getErrors().isEmpty()) {
+            throw BadRequestException.from(err);
+        }
+
+        if (req.email() != null && !req.email().equals(temp.getEmail())) {
+            temp.setEmail(req.email());
+        }
+
+        return tempMapper.toResponse(tempRepository.save(temp));
     }
 }
