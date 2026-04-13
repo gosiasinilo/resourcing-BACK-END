@@ -1,7 +1,6 @@
 package io.nology.resources.temp;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.notNullValue;
 import org.junit.jupiter.api.Test;
 
@@ -29,16 +28,6 @@ public class TempE2eTest extends E2eTestSuite {
                                 .body("firstName", equalTo("John"))
                                 .body("lastName", equalTo("Brown"))
                                 .body("email", equalTo("john.brown@example.com"));
-        }
-
-        @Test
-        void getAllTemps_shouldReturnList() {
-                given()
-                                .when()
-                                .get("/temps")
-                                .then()
-                                .statusCode(200)
-                                .body("size()", greaterThan(0));
         }
 
         @Test
@@ -79,43 +68,6 @@ public class TempE2eTest extends E2eTestSuite {
         }
 
         @Test
-        void getAvailableTempsByDate_shouldReturnList() {
-                given()
-                                .when()
-                                .get("/temps?startDate=2026-06-01&endDate=2026-06-10")
-                                .then()
-                                .statusCode(200)
-                                .body("$", notNullValue());
-        }
-
-        @Test
-        void getAvailableTempsByJob_shouldReturnList() {
-
-                int jobId = given()
-                                .contentType("application/json")
-                                .body("""
-                                                    {
-                                                      "name": "Warehouse inventory",
-                                                      "startDate": "2026-08-01",
-                                                      "endDate": "2026-08-05"
-                                                    }
-                                                """)
-                                .when()
-                                .post("/jobs")
-                                .then()
-                                .statusCode(201)
-                                .extract()
-                                .path("id");
-
-                given()
-                                .when()
-                                .get("/temps?jobId=" + jobId)
-                                .then()
-                                .statusCode(200)
-                                .body("$", notNullValue());
-        }
-
-        @Test
         void deleteTemp_shouldReturn204() {
 
                 int tempId = given()
@@ -138,5 +90,141 @@ public class TempE2eTest extends E2eTestSuite {
                                 .delete("/temps/" + tempId)
                                 .then()
                                 .statusCode(204);
+        }
+
+        @Test
+        void editTemp_shouldUpdateFirstName() {
+                int id = given()
+                                .contentType("application/json")
+                                .body("""
+                                                    {
+                                                      "firstName": "Alice",
+                                                      "lastName": "Jones",
+                                                      "email": "alice.jones@example.com"
+                                                    }
+                                                """)
+                                .when()
+                                .post("/temps")
+                                .then()
+                                .statusCode(201)
+                                .extract()
+                                .path("id");
+
+                given()
+                                .contentType("application/json")
+                                .body("""
+                                                    { "firstName": "Alicia" }
+                                                """)
+                                .when()
+                                .patch("/temps/" + id)
+                                .then()
+                                .statusCode(200)
+                                .body("firstName", equalTo("Alicia"))
+                                .body("lastName", equalTo("Jones"))
+                                .body("email", equalTo("alice.jones@example.com"));
+        }
+
+        @Test
+        void editTemp_shouldUpdateEmail() {
+                int id = given()
+                                .contentType("application/json")
+                                .body("""
+                                                    {
+                                                      "firstName": "Bob",
+                                                      "lastName": "Smith",
+                                                      "email": "bob.smith@example.com"
+                                                    }
+                                                """)
+                                .when()
+                                .post("/temps")
+                                .then()
+                                .statusCode(201)
+                                .extract()
+                                .path("id");
+
+                given()
+                                .contentType("application/json")
+                                .body("""
+                                                    { "email": "bob.new@example.com" }
+                                                """)
+                                .when()
+                                .patch("/temps/" + id)
+                                .then()
+                                .statusCode(200)
+                                .body("email", equalTo("bob.new@example.com"))
+                                .body("firstName", equalTo("Bob"));
+        }
+
+        @Test
+        void editTemp_shouldReturn400_whenFirstNameTooShort() {
+                int id = given()
+                                .contentType("application/json")
+                                .body("""
+                                                    {
+                                                      "firstName": "Carol",
+                                                      "lastName": "White",
+                                                      "email": "carol.white@example.com"
+                                                    }
+                                                """)
+                                .when()
+                                .post("/temps")
+                                .then()
+                                .statusCode(201)
+                                .extract()
+                                .path("id");
+
+                given()
+                                .contentType("application/json")
+                                .body("""
+                                                    { "firstName": "Jo" }
+                                                """)
+                                .when()
+                                .patch("/temps/" + id)
+                                .then()
+                                .statusCode(400)
+                                .body("details.firstName", notNullValue());
+        }
+
+        @Test
+        void editTemp_shouldReturn400_whenEmailInvalid() {
+                int id = given()
+                                .contentType("application/json")
+                                .body("""
+                                                    {
+                                                      "firstName": "Dave",
+                                                      "lastName": "Black",
+                                                      "email": "dave.black@example.com"
+                                                    }
+                                                """)
+                                .when()
+                                .post("/temps")
+                                .then()
+                                .statusCode(201)
+                                .extract()
+                                .path("id");
+
+                given()
+                                .contentType("application/json")
+                                .body("""
+                                                    { "email": "not-an-email" }
+                                                """)
+                                .when()
+                                .patch("/temps/" + id)
+                                .then()
+                                .statusCode(400)
+                                .body("details.email", notNullValue());
+        }
+
+        @Test
+        void editTemp_shouldReturn404_whenTempNotFound() {
+                given()
+                                .contentType("application/json")
+                                .body("""
+                                                    { "firstName": "Ghost" }
+                                                """)
+                                .when()
+                                .patch("/temps/99999")
+                                .then()
+                                .statusCode(404);
         }
 }

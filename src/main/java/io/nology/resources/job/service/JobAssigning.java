@@ -21,69 +21,74 @@ import io.nology.resources.temp.entity.Temp;
 @Service
 public class JobAssigning {
 
-    private final JobRepository jobRepository;
-    private final TempRepository tempRepository;
-    private final JobMapper jobMapper;
-    private final TempAvailabilityService tempAvailability;
-    private final TempAssigning tempAssigning;
+        private final JobRepository jobRepository;
+        private final TempRepository tempRepository;
+        private final JobMapper jobMapper;
+        private final TempAvailabilityService tempAvailability;
+        private final TempAssigning tempAssigning;
 
-    public JobAssigning(
-            JobRepository jobRepository,
-            TempRepository tempRepository,
-            JobMapper jobMapper,
-            TempAvailabilityService tempAvailability,
-            TempAssigning tempAssigning) {
-
-        this.jobRepository = jobRepository;
-        this.tempRepository = tempRepository;
-        this.jobMapper = jobMapper;
-        this.tempAvailability = tempAvailability;
-        this.tempAssigning = tempAssigning;
-
-    }
-
-    @Transactional
-    public JobResponse assignTemp(Long jobId, Long tempId) {
-
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new NotFoundException(new NotFoundError("Job", jobId)));
-
-        Temp temp = tempRepository.findById(tempId)
-                .orElseThrow(() -> new NotFoundException(new NotFoundError("Temp", tempId)));
-
-        if (!tempAssigning.isTempAvailable(temp, job.getStartDate(), job.getEndDate())) {
-
-            List<Temp> allTemps = tempRepository.findAll();
-
-            throw new BadRequestException(
-                    "Temp not available",
-                    HttpStatus.BAD_REQUEST,
-                    "TEMP_BUSY",
-                    Map.of(
-                            "nextAvailableDate",
-                            List.of(tempAvailability.getNextAvailableDate(temp, job.getStartDate()).toString()),
-                            "availableTemps",
-                            tempAvailability.getAlternativeTemps(
-                                    allTemps,
-                                    job.getStartDate(),
-                                    job.getEndDate(),
-                                    tempId)));
+        public JobAssigning(
+                        JobRepository jobRepository,
+                        TempRepository tempRepository,
+                        JobMapper jobMapper,
+                        TempAvailabilityService tempAvailability,
+                        TempAssigning tempAssigning) {
+                this.jobRepository = jobRepository;
+                this.tempRepository = tempRepository;
+                this.jobMapper = jobMapper;
+                this.tempAvailability = tempAvailability;
+                this.tempAssigning = tempAssigning;
         }
 
-        job.setTemp(temp);
-        temp.getJobs().add(job);
+        @Transactional
+        public JobResponse assignTemp(Long jobId, Long tempId) {
 
-        return jobMapper.toResponse(jobRepository.save(job));
-    }
+                Job job = jobRepository.findById(jobId)
+                                .orElseThrow(() -> new NotFoundException(
+                                                new NotFoundError("Job", jobId)));
 
-    @Transactional
-    public JobResponse unassignTemp(Long jobId) {
+                Temp temp = tempRepository.findById(tempId)
+                                .orElseThrow(() -> new NotFoundException(
+                                                new NotFoundError("Temp", tempId)));
 
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new NotFoundException(new NotFoundError("Job", jobId)));
+                if (!tempAvailability.isTempAvailable(
+                                temp, job.getStartDate(), job.getEndDate())) {
 
-        tempAssigning.removeTempFromJob(job);
+                        List<Temp> allTemps = tempRepository.findAll();
 
-        return jobMapper.toResponse(jobRepository.save(job));
-    }
+                        throw new BadRequestException(
+                                        "Temp not available",
+                                        HttpStatus.BAD_REQUEST,
+                                        "TEMP_BUSY",
+                                        Map.of(
+                                                        "nextAvailableDate",
+                                                        List.of(tempAvailability
+                                                                        .getNextAvailableDate(
+                                                                                        temp, job.getStartDate())
+                                                                        .toString()),
+                                                        "availableTemps",
+                                                        tempAvailability.getAlternativeTemps(
+                                                                        allTemps,
+                                                                        job.getStartDate(),
+                                                                        job.getEndDate(),
+                                                                        tempId)));
+                }
+
+                job.setTemp(temp);
+                temp.getJobs().add(job);
+
+                return jobMapper.toResponse(jobRepository.save(job));
+        }
+
+        @Transactional
+        public JobResponse unassignTemp(Long jobId) {
+
+                Job job = jobRepository.findById(jobId)
+                                .orElseThrow(() -> new NotFoundException(
+                                                new NotFoundError("Job", jobId)));
+
+                tempAssigning.removeTempFromJob(job);
+
+                return jobMapper.toResponse(jobRepository.save(job));
+        }
 }

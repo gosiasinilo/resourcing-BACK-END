@@ -14,6 +14,7 @@ import io.nology.resources.common.serviceErrors.ValidationErrors;
 import io.nology.resources.common.validations.Validations;
 import io.nology.resources.job.JobRepository;
 import io.nology.resources.job.entity.Job;
+import io.nology.resources.job.service.TempAvailabilityService;
 import io.nology.resources.temp.dto.AvailableTempInfo;
 import io.nology.resources.temp.dto.CreateTempReq;
 import io.nology.resources.temp.dto.EditTempReq;
@@ -27,14 +28,19 @@ public class TempService {
     private final TempRepository tempRepository;
     private final JobRepository jobRepository;
     private final TempMapper tempMapper;
-    private final TempAssigning tempAssigning;
+    private final TempAvailabilityService tempAvailability;
 
-    public TempService(TempRepository tempRepository, JobRepository jobRepository, TempMapper tempMapper,
-            TempAssigning tempAssigning) {
+    public TempService(
+            TempRepository tempRepository,
+            JobRepository jobRepository,
+            TempMapper tempMapper,
+            TempAvailabilityService tempAvailability) {
+
         this.tempRepository = tempRepository;
         this.jobRepository = jobRepository;
         this.tempMapper = tempMapper;
-        this.tempAssigning = tempAssigning;
+        this.tempAvailability = tempAvailability;
+
     }
 
     public List<TempResponse> getAllTemps() {
@@ -63,7 +69,7 @@ public class TempService {
 
         return allTemps.stream().map(temp -> {
 
-            boolean busy = !tempAssigning.isTempAvailable(temp, startDate, endDate);
+            boolean busy = !tempAvailability.isTempAvailable(temp, startDate, endDate);
 
             if (busy) {
                 return new AvailableTempInfo(
@@ -71,8 +77,8 @@ public class TempService {
                         temp.getFirstName(),
                         temp.getLastName(),
                         temp.getEmail(),
-                        tempAssigning.getNextAvailableDate(temp, startDate),
-                        tempAssigning.getAlternativeTemps(allTemps, startDate, endDate, temp.getId()));
+                        tempAvailability.getNextAvailableDate(temp, startDate),
+                        tempAvailability.getAlternativeTemps(allTemps, startDate, endDate, temp.getId()));
             }
 
             return new AvailableTempInfo(
