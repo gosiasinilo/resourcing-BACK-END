@@ -49,15 +49,15 @@ public class TempController {
         return tempService.getAllTemps();
     }
 
+    @GetMapping("/{id}")
+    public TempResponseById getTempById(@PathVariable Long id) {
+        return tempService.getTempById(id);
+    }
+
     @PostMapping
     public ResponseEntity<TempResponse> createTemp(@RequestBody @Valid CreateTempReq request) {
         TempResponse response = tempService.createTemp(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @GetMapping("/{id}")
-    public TempResponseById getTempById(@PathVariable Long id) {
-        return tempService.getTempById(id);
     }
 
     @PatchMapping("/{id}")

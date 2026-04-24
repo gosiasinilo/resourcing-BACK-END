@@ -76,7 +76,7 @@ public class JobAssigning {
 
                 job.setTemp(temp);
                 temp.getJobs().add(job);
-
+                job.setStatus(Job.JobStatus.ASSIGNED);
                 return jobMapper.toResponse(jobRepository.save(job));
         }
 
@@ -88,7 +88,7 @@ public class JobAssigning {
                                                 new NotFoundError("Job", jobId)));
 
                 tempAssigning.removeTempFromJob(job);
-
+                job.setStatus(Job.JobStatus.INITIATED);
                 return jobMapper.toResponse(jobRepository.save(job));
         }
 }
