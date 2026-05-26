@@ -1,8 +1,8 @@
 package io.nology.resources.job;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +20,7 @@ import io.nology.resources.job.dto.CompleteJobReq;
 import io.nology.resources.job.dto.CreateJobReq;
 import io.nology.resources.job.dto.EditJobReq;
 import io.nology.resources.job.dto.JobResponse;
+import io.nology.resources.job.entity.Job;
 import io.nology.resources.job.service.JobService;
 import jakarta.validation.Valid;
 
@@ -39,9 +40,20 @@ public class JobController {
         return jobService.createJob(request);
     }
 
+    /**
+     * GET /jobs?page=0&size=10&status=IN_PROGRESS&assigned=true
+     * All params optional. Defaults: page=0, size=20.
+     */
     @GetMapping
-    public List<JobResponse> getJobs(@RequestParam Optional<Boolean> assigned) {
-        return jobService.getAllJobs(assigned);
+    public Page<JobResponse> getJobs(
+            @RequestParam Optional<Boolean> assigned,
+            @RequestParam Optional<Job.JobStatus> status,
+            @RequestParam(defaultValue = "false") boolean overdue,
+            @RequestParam(required = false) Job.JobType jobType,
+            @RequestParam(defaultValue = "date-desc") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return jobService.getAllJobs(assigned, status, overdue, jobType, sort, page, size);
     }
 
     @GetMapping("/{id}")
@@ -72,6 +84,16 @@ public class JobController {
             @RequestBody @Valid CompleteJobReq request,
             Authentication authentication) {
         return jobService.completeJob(id, request, authentication);
+    }
+
+    @PostMapping("/{id}/recommend-temp")
+    public io.nology.resources.job.dto.TempRecommendationResponse recommendTemp(@PathVariable Long id) {
+        return jobService.recommendTemp(id);
+    }
+
+    @PostMapping("/{id}/close")
+    public JobResponse closeJob(@PathVariable Long id) {
+        return jobService.closeJob(id);
     }
 
     @DeleteMapping("/{id}")

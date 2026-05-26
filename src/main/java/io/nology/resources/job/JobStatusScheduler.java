@@ -19,32 +19,17 @@ public class JobStatusScheduler {
         this.jobRepo = jobRepo;
     }
 
-    @Scheduled(cron = "0 0 1 * * *") // runs at 1am every day
+    @Scheduled(cron = "0 0 1 * * *")
     @Transactional
     public void updateJobStatuses() {
         LocalDate today = LocalDate.now();
 
-        // ASSIGNED -> ACTIVE: job has started but not yet ended
-        List<Job> toActivate = jobRepo.findByStatus(JobStatus.ASSIGNED)
+        List<Job> toStart = jobRepo.findByStatus(JobStatus.ASSIGNED)
                 .stream()
-                .filter(job -> !job.getStartDate().isAfter(today)
-                        && !job.getEndDate().isBefore(today))
+                .filter(job -> !job.getStartDate().isAfter(today))
                 .toList();
+        toStart.forEach(job -> job.setStatus(JobStatus.IN_PROGRESS));
+        jobRepo.saveAll(toStart);
 
-        toActivate.forEach(job -> job.setStatus(JobStatus.ACTIVE));
-        jobRepo.saveAll(toActivate);
-
-        // ACTIVE -> COMPLETED: end date has passed
-        List<Job> toComplete = jobRepo.findByStatus(JobStatus.ACTIVE)
-                .stream()
-                .filter(job -> job.getEndDate().isBefore(today))
-                .toList();
-
-        toComplete.forEach(job -> job.setStatus(JobStatus.COMPLETED));
-        jobRepo.saveAll(toComplete);
-
-        System.out.println("Job status update: " +
-                toActivate.size() + " activated, " +
-                toComplete.size() + " completed.");
     }
 }
