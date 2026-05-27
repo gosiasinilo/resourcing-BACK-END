@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import io.nology.resources.job.entity.Job;
+import io.nology.resources.jobreview.dto.JobReviewResponse;
 import io.nology.resources.temp.dto.TempResponse;
 
 public record JobResponse(Long id, String name, String description,
@@ -13,5 +14,6 @@ public record JobResponse(Long id, String name, String description,
         LocalDate endDate,
         String city,
         List<String> requiredSkills,
-        TempResponse temp) {
+        TempResponse temp,
+        JobReviewResponse review) {
 }

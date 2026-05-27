@@ -1,5 +1,7 @@
 package io.nology.resources.config.seeder;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +103,7 @@ public class DevDataSeeder {
                 LocalDate activeStart = LocalDate.now().minusDays(1 + random.nextInt(3));
                 activeJob.setStartDate(activeStart);
                 activeJob.setEndDate(LocalDate.now().plusDays(1 + random.nextInt(5)));
-                activeJob.setStatus(Job.JobStatus.ACTIVE);
+                activeJob.setStatus(Job.JobStatus.IN_PROGRESS);
                 jobRepo.save(activeJob);
 
                 if (random.nextBoolean()) {
@@ -120,6 +122,25 @@ public class DevDataSeeder {
                 jobRepo.save(jobFactory.createJob(skills));
             }
 
+            // Overdue jobs — past end date, still active
+            Job[] overdueJobs = {
+                jobFactory.createJob(skills),
+                jobFactory.createJob(skills, allTemps.get(0)),
+                jobFactory.createJob(skills, allTemps.get(1)),
+            };
+            Job.JobStatus[] overdueStatuses = {
+                Job.JobStatus.INITIATED,
+                Job.JobStatus.IN_PROGRESS,
+                Job.JobStatus.IN_PROGRESS,
+            };
+            for (int i = 0; i < overdueJobs.length; i++) {
+                LocalDate overdueStart = LocalDate.now().minusDays(15 + random.nextInt(10));
+                overdueJobs[i].setStartDate(overdueStart);
+                overdueJobs[i].setEndDate(overdueStart.plusDays(3 + random.nextInt(5)));
+                overdueJobs[i].setStatus(overdueStatuses[i]);
+                jobRepo.save(overdueJobs[i]);
+            }
+
             System.out.println("Seeding completed: " + allTemps.size() + " temps");
             System.out.println("Total jobs: " + jobRepo.count());
             System.out.println("Total reviews: " + reviewRepo.count());
@@ -130,9 +151,12 @@ public class DevDataSeeder {
         JobReview review = new JobReview();
         review.setJob(job);
         review.setTemp(temp);
-        review.setWorkQuality(3 + random.nextInt(3));
-        review.setCommunication(3 + random.nextInt(3));
-        review.setOnTime(3 + random.nextInt(3));
+        int wq = 3 + random.nextInt(3);
+        int comm = 3 + random.nextInt(3);
+        int onTime = 3 + random.nextInt(3);
+        review.setWorkQuality(wq);
+        review.setCommunication(comm);
+        review.setOnTime(onTime);
         review.setReviewedBy(REVIEWERS[random.nextInt(REVIEWERS.length)]);
 
         boolean positive = random.nextBoolean();
@@ -141,5 +165,8 @@ public class DevDataSeeder {
                 : MIXED_COMMENTS[random.nextInt(MIXED_COMMENTS.length)]);
 
         reviewRepo.save(review);
+
+        double avg = (wq + comm + onTime) / 3.0;
+        temp.setRating(new BigDecimal(avg).setScale(2, RoundingMode.HALF_UP));
     }
 }

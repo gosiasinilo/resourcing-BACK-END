@@ -13,7 +13,8 @@ public record AvailableTempInfo(
         BigDecimal rating,
         boolean available,
         LocalDate nextAvailableStart,
-        List<AlternativeTempInfo> alternativeTemps) {
+        List<AlternativeTempInfo> alternativeTemps,
+        int matchingSkillCount) {
     public record AlternativeTempInfo(
             Long id,
             String firstName,

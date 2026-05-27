@@ -12,6 +12,7 @@ import io.nology.resources.temp.entity.Temp;
 
 @Repository
 public interface TempRepository extends JpaRepository<Temp, Long> {
+    boolean existsByEmail(String email);
     @Query("""
                 SELECT t FROM Temp t
                 WHERE t.id NOT IN (

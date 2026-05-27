@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import io.nology.resources.job.dto.JobResponse;
 import io.nology.resources.job.entity.Job;
+import io.nology.resources.jobreview.dto.JobReviewResponse;
+import io.nology.resources.jobreview.entity.JobReview;
 import io.nology.resources.temp.dto.TempResponse;
 import io.nology.resources.temp.entity.Temp;
 
@@ -26,7 +28,16 @@ public class JobMapper {
                     temp.getLastName(),
                     temp.getEmail(),
                     temp.getCity(),
-                    temp.getRating());
+                    temp.getRating(),
+                    temp.getJobs().size());
+        }
+
+        JobReviewResponse reviewResponse = null;
+        if (!job.getReviews().isEmpty()) {
+            JobReview r = job.getReviews().get(0);
+            reviewResponse = new JobReviewResponse(
+                    r.getId(), r.getWorkQuality(), r.getCommunication(),
+                    r.getOnTime(), r.getComments(), r.getReviewedBy(), r.getCreatedAt());
         }
 
         return new JobResponse(
@@ -39,6 +50,7 @@ public class JobMapper {
                 job.getEndDate(),
                 job.getCity(),
                 requiredSkills,
-                tempResponse);
+                tempResponse,
+                reviewResponse);
     }
 }

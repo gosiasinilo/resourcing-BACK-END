@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import io.nology.resources.skill.entity.Skill;
 
 public interface SkillRepository extends JpaRepository<Skill, Long> {
+    boolean existsByNameIgnoreCase(String name);
 }

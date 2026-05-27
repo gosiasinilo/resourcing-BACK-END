@@ -113,7 +113,6 @@ public class JobService {
     }
 
     public Page<JobResponse> getAllJobs(
-            Optional<Boolean> assigned,
             Optional<Job.JobStatus> status,
             boolean overdue,
             Job.JobType jobType,
@@ -123,12 +122,6 @@ public class JobService {
 
         List<Job> jobs = jobRepository.findAll();
 
-        if (assigned.isPresent()) {
-            boolean isAssigned = assigned.get();
-            jobs = jobs.stream()
-                    .filter(j -> isAssigned ? j.getTemp() != null : j.getTemp() == null)
-                    .toList();
-        }
         if (status.isPresent()) {
             jobs = jobs.stream().filter(j -> j.getStatus() == status.get()).toList();
         }

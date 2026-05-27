@@ -13,7 +13,12 @@ import io.nology.resources.temp.entity.Temp;
 public class TempAssigning {
 
     public boolean isTempAvailable(Temp temp, LocalDate start, LocalDate end) {
+        return isTempAvailableExcluding(temp, start, end, null);
+    }
+
+    public boolean isTempAvailableExcluding(Temp temp, LocalDate start, LocalDate end, Long excludeJobId) {
         return temp.getJobs().stream()
+                .filter(j -> excludeJobId == null || !j.getId().equals(excludeJobId))
                 .noneMatch(j -> !(j.getEndDate().isBefore(start)
                         || j.getStartDate().isAfter(end)));
     }

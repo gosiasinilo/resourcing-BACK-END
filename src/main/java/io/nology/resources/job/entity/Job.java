@@ -32,7 +32,7 @@ public class Job extends BaseEntity implements Timestampable {
     }
 
     public enum JobStatus {
-        INITIATED, ASSIGNED, ACTIVE, COMPLETED
+        INITIATED, ASSIGNED, IN_PROGRESS, COMPLETED
     }
 
     private String name;

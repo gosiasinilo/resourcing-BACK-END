@@ -18,7 +18,8 @@ public class TempMapper {
                 temp.getLastName(),
                 temp.getEmail(),
                 temp.getCity(),
-                temp.getRating());
+                temp.getRating(),
+                temp.getJobs().size());
     }
 
     public TempResponseById toDetailResponse(Temp temp) {
@@ -27,12 +28,21 @@ public class TempMapper {
                 .toList();
 
         List<TempResponseById.JobSummary> jobs = temp.getJobs().stream()
-                .map(j -> new TempResponseById.JobSummary(
-                        j.getId(),
-                        j.getName(),
-                        j.getStartDate().toString(),
-                        j.getEndDate().toString(),
-                        j.getStatus()))
+                .map(j -> {
+                    TempResponseById.JobSummary.JobReviewSummary review = null;
+                    if (!j.getReviews().isEmpty()) {
+                        var r = j.getReviews().get(0);
+                        review = new TempResponseById.JobSummary.JobReviewSummary(
+                                r.getWorkQuality(), r.getCommunication(), r.getOnTime(), r.getComments());
+                    }
+                    return new TempResponseById.JobSummary(
+                            j.getId(),
+                            j.getName(),
+                            j.getStartDate().toString(),
+                            j.getEndDate().toString(),
+                            j.getStatus(),
+                            review);
+                })
                 .toList();
 
         return new TempResponseById(

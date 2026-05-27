@@ -1,53 +1,27 @@
 package io.nology.resources.common.services;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Service
 public class LocationService {
 
-    private final RestClient restClient;
-
-    public LocationService() {
-        this.restClient = RestClient.builder()
-                .baseUrl("https://nominatim.openstreetmap.org")
-                .defaultHeader("User-Agent", "resources-app")
-                .build();
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    private record NominatimResult(String lat, String lon) {
-    }
+    private static final Map<String, double[]> AU_CITIES = Map.of(
+        "melbourne", new double[]{-37.8136, 144.9631},
+        "sydney",    new double[]{-33.8688, 151.2093},
+        "brisbane",  new double[]{-27.4698, 153.0251},
+        "perth",     new double[]{-31.9505, 115.8605},
+        "adelaide",  new double[]{-34.9285, 138.6007},
+        "canberra",  new double[]{-35.2809, 149.1300},
+        "hobart",    new double[]{-42.8821, 147.3272},
+        "darwin",    new double[]{-12.4634, 130.8456}
+    );
 
     public Optional<double[]> getCoordinates(String city) {
-        try {
-            List<NominatimResult> results = restClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/search")
-                            .queryParam("q", city)
-                            .queryParam("countrycode", "au")
-                            .queryParam("format", "json")
-                            .queryParam("limit", 1)
-                            .build())
-                    .retrieve()
-                    .body(new org.springframework.core.ParameterizedTypeReference<List<NominatimResult>>() {
-                    });
-
-            if (results == null || results.isEmpty()) {
-                return Optional.empty();
-            }
-
-            double lat = Double.parseDouble(results.get(0).lat());
-            double lon = Double.parseDouble(results.get(0).lon());
-            return Optional.of(new double[] { lat, lon });
-
-        } catch (Exception e) {
-            return Optional.empty();
-        }
+        if (city == null || city.isBlank()) return Optional.empty();
+        double[] coords = AU_CITIES.get(city.trim().toLowerCase());
+        return Optional.ofNullable(coords);
     }
 }

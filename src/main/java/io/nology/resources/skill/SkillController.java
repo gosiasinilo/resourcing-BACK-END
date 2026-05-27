@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.nology.resources.common.exception.BadRequestException;
 import io.nology.resources.common.exception.NotFoundException;
 import io.nology.resources.common.serviceErrors.NotFoundError;
+import io.nology.resources.common.serviceErrors.ValidationErrors;
 import io.nology.resources.skill.dto.CreateSkillReq;
 import io.nology.resources.skill.entity.Skill;
 import jakarta.validation.Valid;
@@ -36,6 +38,11 @@ public class SkillController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Skill createSkill(@RequestBody @Valid CreateSkillReq request) {
+        if (skillRepository.existsByNameIgnoreCase(request.name())) {
+            ValidationErrors err = new ValidationErrors();
+            err.addError("name", "Skill '" + request.name() + "' already exists");
+            throw BadRequestException.from(err);
+        }
         Skill skill = new Skill();
         skill.setName(request.name());
         return skillRepository.save(skill);

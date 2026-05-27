@@ -36,7 +36,10 @@ public class TempController {
     public Object getTemps(
             @RequestParam(required = false) Long jobId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String city,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
 
         if (jobId != null) {
             return tempService.getAvailableTempsByJob(jobId);
@@ -46,7 +49,7 @@ public class TempController {
             return tempService.getAvailableTempsByDate(startDate, endDate);
         }
 
-        return tempService.getAllTemps();
+        return tempService.getAllTemps(city, page, size);
     }
 
     @GetMapping("/{id}")

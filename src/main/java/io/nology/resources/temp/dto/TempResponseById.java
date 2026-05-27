@@ -15,6 +15,9 @@ public record TempResponseById(Long id, String firstName, String lastName, Strin
             String name,
             String startDate,
             String endDate,
-            Job.JobStatus status) {
+            Job.JobStatus status,
+            JobReviewSummary review) {
+        public record JobReviewSummary(Integer workQuality, Integer communication, Integer onTime, String comments) {
+        }
     }
 }

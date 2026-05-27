@@ -46,14 +46,13 @@ public class JobController {
      */
     @GetMapping
     public Page<JobResponse> getJobs(
-            @RequestParam Optional<Boolean> assigned,
             @RequestParam Optional<Job.JobStatus> status,
             @RequestParam(defaultValue = "false") boolean overdue,
             @RequestParam(required = false) Job.JobType jobType,
             @RequestParam(defaultValue = "date-desc") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return jobService.getAllJobs(assigned, status, overdue, jobType, sort, page, size);
+        return jobService.getAllJobs(status, overdue, jobType, sort, page, size);
     }
 
     @GetMapping("/{id}")
