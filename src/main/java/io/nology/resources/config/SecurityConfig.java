@@ -1,5 +1,6 @@
 package io.nology.resources.config;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,13 @@ public class SecurityConfig {
 
     @Value("${app.admin.password}")
     private String adminPassword;
+
+    /**
+     * Comma-separated list of allowed browser origins. Override per environment
+     * with the APP_CORS_ALLOWED_ORIGINS env var.
+     */
+    @Value("${app.cors.allowed-origins:http://localhost:5173,https://resources.gosiasinilo.com}")
+    private String[] allowedOrigins;
 
     @Bean
     public UserDetailsService userDetailsService() {
@@ -52,7 +60,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://resources-app-frontend.s3-website-ap-southeast-2.amazonaws.com", "https://dxm4qxmvklywh.cloudfront.net", "https://d2q995vs0cquxp.cloudfront.net", "https://resources.gosiasinilo.com"));
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

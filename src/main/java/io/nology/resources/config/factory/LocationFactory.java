@@ -10,7 +10,7 @@ import com.github.javafaker.Faker;
 import io.nology.resources.common.services.LocationService;
 
 @Component
-@Profile({ "dev", "test" })
+@Profile({ "dev", "test", "prod" })
 public class LocationFactory {
 
     private final Faker faker = new Faker();

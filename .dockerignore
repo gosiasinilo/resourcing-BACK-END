@@ -1,0 +1,14 @@
+target/
+.git/
+.github/
+.mvn/
+mvnw
+mvnw.cmd
+.env
+.env.*
+!.env.example
+*.md
+.DS_Store
+**/.DS_Store
+.vscode/
+.idea/
