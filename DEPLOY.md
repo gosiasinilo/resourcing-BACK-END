@@ -23,7 +23,7 @@ subscription (`az login`, then `az account set --subscription "<name>"`).
 ```bash
 # --- variables -------------------------------------------------------------
 RG=resourcing-rg
-LOCATION=australiaeast              # a region your student sub allows
+LOCATION=indonesiacentral              # a region your student sub allows
 ENV=resourcing-env                 # Container Apps environment
 APP=resourcing-api                 # Container App name
 MYSQL=resourcing-db-$RANDOM        # must be globally unique
@@ -81,34 +81,31 @@ Grab the backend URL:
 
 ```bash
 az containerapp show -g $RG -n $APP --query properties.configuration.ingress.fqdn -o tsv
-# e.g. resourcing-api.<hash>.australiaeast.azurecontainerapps.io
+# e.g. resourcing-api.<hash>.indonesiacentral.azurecontainerapps.io
 ```
 
-## 2. GitHub configuration (this repo)
+## 2. Build + deploy the backend image
 
-**Make the GHCR image public** (simplest, no pull secret needed):
-after the first workflow run, GitHub → repo → *Packages* → the package →
-*Package settings* → *Change visibility* → Public. Otherwise configure a
-registry PAT on the Container App.
+The Azure for Students tenant blocks service-principal creation, so the
+workflow (`.github/workflows/deploy-backend.yml`) only **builds and pushes**
+the image to GHCR. You roll it out yourself with one `az` command (you're
+already `az login`-ed locally).
 
-**Create a deploy service principal:**
+**a. First run:** push to `main` (or run the workflow via *Actions → Build
+backend image → Run workflow*). It builds `ghcr.io/<owner>/<repo>:latest`.
 
-```bash
-az ad sp create-for-rbac --name "resourcing-deploy" --role contributor \
-  --scopes /subscriptions/<sub-id>/resourceGroups/$RG --sdk-auth
+**b. Make the GHCR package public** so Container Apps can pull it without a
+registry secret: GitHub → your profile → *Packages* → `resourcing-back-end`
+→ *Package settings* → *Change visibility* → **Public**. (One time.)
+
+**c. Deploy** — run locally after each successful build:
+
+```powershell
+az containerapp update -g resourcing-rg -n resourcing-api `
+  --image ghcr.io/gosiasinilo/resourcing-back-end:latest
 ```
 
-Copy the JSON output.
-
-**Repo → Settings → Secrets and variables → Actions:**
-
-| Kind     | Name                 | Value                                  |
-|----------|----------------------|----------------------------------------|
-| Secret   | `AZURE_CREDENTIALS`  | the `--sdk-auth` JSON above             |
-| Variable | `ACA_APP_NAME`       | `resourcing-api`                       |
-| Variable | `ACA_RESOURCE_GROUP` | `resourcing-rg`                        |
-
-Push to `main` → the workflow builds, pushes, and rolls out.
+The workflow's run summary prints this command with the exact commit SHA tag.
 
 ## 3. Point the frontend at the backend
 

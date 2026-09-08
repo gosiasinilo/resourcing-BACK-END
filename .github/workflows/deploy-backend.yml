@@ -1,4 +1,12 @@
-name: Deploy backend to Azure Container Apps
+name: Build backend image
+
+# The student Azure tenant blocks service-principal creation, so this workflow
+# only builds and publishes the container image to GHCR. Roll it out with:
+#
+#   az containerapp update -g resourcing-rg -n resourcing-api \
+#     --image ghcr.io/<owner>/<repo>:latest
+#
+# run locally after the workflow finishes (you're already `az login`-ed).
 
 on:
   push:
@@ -6,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,17 +45,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Azure login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Update Container App image
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az containerapp update \
-              --name "${{ vars.ACA_APP_NAME }}" \
-              --resource-group "${{ vars.ACA_RESOURCE_GROUP }}" \
-              --image "${{ env.IMAGE }}:${{ github.sha }}"
+      - name: Summary
+        run: |
+          echo "Pushed \`${IMAGE}:latest\` and \`${IMAGE}:${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deploy with:" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "az containerapp update -g resourcing-rg -n resourcing-api --image ${IMAGE}:${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
