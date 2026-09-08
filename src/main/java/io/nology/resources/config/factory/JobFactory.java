@@ -13,7 +13,7 @@ import io.nology.resources.skill.entity.Skill;
 import io.nology.resources.temp.entity.Temp;
 
 @Component
-@Profile({ "dev", "test" })
+@Profile({ "dev", "test", "prod" })
 public class JobFactory {
 
     private final Faker faker = new Faker();

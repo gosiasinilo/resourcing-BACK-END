@@ -12,7 +12,7 @@ import com.github.javafaker.Faker;
 import io.nology.resources.skill.entity.Skill;
 
 @Component
-@Profile({ "dev", "test" })
+@Profile({ "dev", "test", "prod" })
 public class SkillFactory {
 
     private final Faker faker = new Faker();
