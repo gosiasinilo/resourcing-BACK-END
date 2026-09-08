@@ -22,6 +22,14 @@ public class JobMapper {
         TempResponse tempResponse = null;
         Temp temp = job.getTemp();
         if (temp != null) {
+            var tempJobs = temp.getJobs();
+            int assigned = (int) tempJobs.stream()
+                    .filter(j -> j.getStatus() == Job.JobStatus.ASSIGNED
+                            || j.getStatus() == Job.JobStatus.IN_PROGRESS)
+                    .count();
+            int completed = (int) tempJobs.stream()
+                    .filter(j -> j.getStatus() == Job.JobStatus.COMPLETED)
+                    .count();
             tempResponse = new TempResponse(
                     temp.getId(),
                     temp.getFirstName(),
@@ -29,7 +37,9 @@ public class JobMapper {
                     temp.getEmail(),
                     temp.getCity(),
                     temp.getRating(),
-                    temp.getJobs().size());
+                    tempJobs.size(),
+                    assigned,
+                    completed);
         }
 
         JobReviewResponse reviewResponse = null;
